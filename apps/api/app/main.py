@@ -2,6 +2,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.agents.registry import AGENTS
+from app.agents.temporal_test_designer import run as run_temporal_test_designer
 from app.agents.test_case_generator import run as run_test_case_generator
 from app.core.config import settings
 from app.models import AgentRunResponse, AgentSummary, TestCaseRunRequest
@@ -22,6 +23,8 @@ def list_agents() -> list[AgentSummary]:
 
 @app.post("/api/v1/agents/{agent_id}/run", response_model=AgentRunResponse)
 def run_agent(agent_id: str, payload: TestCaseRunRequest) -> AgentRunResponse:
-    if agent_id != "test-case-generator":
-        raise HTTPException(status_code=409, detail=f"Agent '{agent_id}' is not executable yet")
-    return run_test_case_generator(payload)
+    if agent_id == "test-case-generator":
+        return run_test_case_generator(payload)
+    if agent_id == "temporal-test-designer":
+        return run_temporal_test_designer(payload)
+    raise HTTPException(status_code=409, detail=f"Agent '{agent_id}' is not executable yet")

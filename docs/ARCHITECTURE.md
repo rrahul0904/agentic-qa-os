@@ -24,17 +24,50 @@ FastAPI control plane
 
 Every agent exposes metadata, accepted input, execution output, evidence, and confidence. The runtime does not allow an agent to silently invent source-backed requirements: generated test cases carry explicit evidence references.
 
-## Initial vertical slice
+## Current vertical slices
 
-The first agent is `test-case-generator`. It converts a natural-language requirement into positive, negative, and boundary test cases. The deterministic engine keeps local development and CI fully functional without an API key.
+### Test Case Generator
+
+`test-case-generator` converts a natural-language requirement into positive, negative, and boundary test cases. The deterministic engine keeps local development and CI fully functional without an API key.
+
+### Temporal Test Designer
+
+`temporal-test-designer` converts a requirement into evidence-linked temporal scenarios such as year/month boundaries, leap-day behavior, the 2038 boundary, backward clock jumps, and accelerated/frozen-time checks.
+
+This slice is deliberately a **planner**, not a clock-manipulation runtime. It must never claim that a target process observed a simulated time until a future execution adapter returns measured coverage evidence.
+
+The planned execution architecture is:
+
+```text
+Agentic QA control plane
+      |
+      v
+Temporal Test Designer
+      |
+      v
+Authorized Windows execution worker
+      |
+      +--> native process-time adapter
+      +--> child-process propagation
+      +--> Chromium / embedded-web adapter
+      |
+      v
+Clock-channel audit + session evidence
+      |
+      v
+Evidence Layer / release-readiness consumers
+```
+
+The Windows execution worker is not implemented in the current repository slice.
 
 ## Roadmap
 
 1. Requirement clarifier + test case generator
-2. OpenAPI test generator + test-data generator
-3. Playwright execution runner + recorder artifacts
-4. Flaky test and failure-clustering intelligence
-5. Self-healing locator engine
-6. Git diff test-impact selection
-7. QA knowledge graph + release-readiness agent
-8. Learning lab / 100-day curriculum
+2. Temporal test design + authorized Windows execution adapter
+3. OpenAPI test generator + test-data generator
+4. Playwright execution runner + recorder artifacts
+5. Flaky test and failure-clustering intelligence
+6. Self-healing locator engine
+7. Git diff test-impact selection
+8. QA knowledge graph + release-readiness agent
+9. Learning lab / 100-day curriculum
